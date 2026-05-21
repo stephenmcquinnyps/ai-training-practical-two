@@ -81,6 +81,14 @@ describe('Router', () => {
       assert.ok(result.body);
       assert.ok(Array.isArray(result.body));
     });
+
+    it('should return 404 when user not found', async () => {
+      const req = mockRequest('GET', '/api/users/999/tasks');
+      const result = await router(req);
+
+      assert.strictEqual(result.status, 404);
+      assert.ok(result.body.error);
+    });
   });
 
   describe('GET /api/tasks', () => {
@@ -91,6 +99,23 @@ describe('Router', () => {
       assert.ok(result.body);
       assert.ok(Array.isArray(result.body));
       assert.ok(result.body.length > 0);
+    });
+  });
+
+  describe('POST /api/tasks', () => {
+    it('should return the created task directly (no wrapper)', async () => {
+      const req = mockRequest('POST', '/api/tasks', {
+        title: 'Frontend integration check',
+        assigneeId: 1,
+      });
+      const result = await router(req);
+
+      assert.strictEqual(result.status, 201);
+      // Frontend reads `response.id` — body must be the task itself.
+      assert.strictEqual(typeof result.body.id, 'number');
+      assert.strictEqual(result.body.title, 'Frontend integration check');
+      assert.strictEqual(result.body.data, undefined);
+      assert.strictEqual(result.body.success, undefined);
     });
   });
 

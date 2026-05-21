@@ -130,5 +130,43 @@ describe('Stats', () => {
       const final = getStats().totalTasks;
       assert.strictEqual(final, initial + 3);
     });
+
+    it('should not lose increments under concurrent calls', async () => {
+      const initial = getStats().totalTasks;
+      const n = 10;
+
+      await Promise.all(
+        Array.from({ length: n }, () => incrementTaskCount())
+      );
+
+      assert.strictEqual(getStats().totalTasks, initial + n);
+    });
+
+    it('should not lose decrements under concurrent calls', async () => {
+      const initial = getStats().totalTasks;
+      const n = 2;
+
+      await Promise.all(
+        Array.from({ length: n }, () => decrementTaskCount())
+      );
+
+      assert.strictEqual(getStats().totalTasks, initial - n);
+    });
+
+    it('should be consistent under mixed concurrent increments and decrements', async () => {
+      const initial = getStats().totalTasks;
+
+      await Promise.all([
+        incrementTaskCount(),
+        incrementTaskCount(),
+        incrementTaskCount(),
+        incrementTaskCount(),
+        incrementTaskCount(),
+        decrementTaskCount(),
+        decrementTaskCount(),
+      ]);
+
+      assert.strictEqual(getStats().totalTasks, initial + 3);
+    });
   });
 });

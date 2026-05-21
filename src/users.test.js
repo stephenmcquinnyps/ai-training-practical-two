@@ -91,5 +91,9 @@ describe('Users', () => {
       const overlap = ids1.filter(id => ids2.includes(id));
       assert.strictEqual(overlap.length, 0);
     });
+
+    it('should return null when user not found', () => {
+      assert.strictEqual(getUserTasks(999), null);
+    });
   });
 });
